@@ -1,0 +1,38 @@
+name: Compile Resume
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up LaTeX
+        uses: dante-ev/latex-action@latest
+        with:
+          root_file: resume_anonymized.tex
+
+      - name: Compile PDF
+        run: |
+          mv resume_anonymized.pdf VigneshDResumeAnonymized.pdf
+
+      - name: Convert PDF to PNG
+        run: |
+          sudo apt-get install -y poppler-utils
+          pdftoppm -png VigneshDResumeAnonymized.pdf VigneshDResumePreview
+          mv VigneshDResumePreview-1.png VigneshDResumePreview.png
+
+      - name: Commit and push changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          add: 'VigneshDResumeAnonymized.pdf VigneshDResumePreview.png'
+          message: 'auto-update of pdf and png'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
